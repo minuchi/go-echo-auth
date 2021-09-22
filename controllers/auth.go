@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"time"
@@ -16,18 +15,7 @@ type (
 	getTimeResponse struct {
 		Time string `json:"time"`
 	}
-	errResponse struct {
-		Ok      bool   `json:"ok"`
-		Error   string `json:"error"`
-		Message string `json:"message"`
-	}
 )
-
-func getRequiredErrResponse(field string) errResponse {
-	err := fmt.Sprintf("%s_required", field)
-	msg := fmt.Sprintf("%s required.", field)
-	return errResponse{Ok: false, Error: err, Message: msg}
-}
 
 func GetTime(c echo.Context) error {
 	t := &getTimeResponse{
@@ -38,19 +26,13 @@ func GetTime(c echo.Context) error {
 }
 
 func Login(c echo.Context) error {
-	body := make(map[string]interface{})
-	if err := c.Bind(&body); err != nil {
+	body := new(loginRequest)
+	if err := c.Bind(body); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	email := body["email"]
-	if email == nil {
-		return echo.NewHTTPError(http.StatusBadRequest, getRequiredErrResponse("email"))
-	}
-
-	password := body["password"]
-	if password == nil {
-		return echo.NewHTTPError(http.StatusBadRequest, getRequiredErrResponse("password"))
+	if err := c.Validate(body); err != nil {
+		return err
 	}
 
 	return c.JSON(http.StatusOK, body)
