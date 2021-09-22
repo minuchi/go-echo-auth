@@ -29,9 +29,18 @@ func main() {
 		Level: 5,
 	}))
 
+	jwtConfig := middleware.JWTConfig{
+		SigningKey: []byte("ACCESS_TOKEN_SECRET"),
+	}
+
 	g := e.Group("/api/auth/v1")
 	g.GET("/time", controllers.GetTime)
 	g.POST("/login", controllers.Login)
 	g.POST("/signup", controllers.SignUp)
+	g.POST("/token", controllers.IssueAccessToken)
+
+	// Authorized routes
+	g.Use(middleware.JWTWithConfig(jwtConfig))
+	g.POST("/verify", controllers.Verify)
 	e.Logger.Fatal(e.Start(":8080"))
 }
