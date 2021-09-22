@@ -32,5 +32,6 @@ func main() {
 	g := e.Group("/api/auth/v1")
 	g.GET("/time", controllers.GetTime)
 	g.POST("/login", controllers.Login)
+	g.POST("/signup", controllers.SignUp)
 	e.Logger.Fatal(e.Start(":8080"))
 }
