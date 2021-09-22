@@ -2,7 +2,6 @@ package lib
 
 import (
 	"github.com/golang-jwt/jwt"
-	"log"
 	"time"
 )
 
@@ -23,7 +22,7 @@ func createToken(secret string, claims jwt.Claims) (string, error) {
 	t, err := token.SignedString([]byte(secret))
 
 	if err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
 
 	return t, err
