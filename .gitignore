@@ -50,3 +50,7 @@ Temporary Items
 # docker-compose.yml
 pgdata/
 tmp/
+
+# Config file
+config.json
+config.yml

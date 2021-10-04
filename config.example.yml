@@ -1,0 +1,11 @@
+database:
+  host: db
+  user: auth
+  password: auth
+  dbname: auth
+  port: '5432'
+  sslmode: disable
+  timezone: Asia/Seoul
+keys:
+  accessTokenSecretKey: ACCESS_TOKEN_SECRET
+  refreshTokenSecretKey: REFRESH_TOKEN_SECRET

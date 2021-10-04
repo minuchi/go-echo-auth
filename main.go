@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/minuchi/go-echo-auth/controllers"
 	"github.com/minuchi/go-echo-auth/database"
+	"github.com/minuchi/go-echo-auth/lib"
 	"github.com/minuchi/go-echo-auth/lib/middlewares"
 	"github.com/minuchi/go-echo-auth/models"
 	"net/http"
@@ -32,12 +33,14 @@ func main() {
 		Level: 5,
 	}))
 
+	config := lib.LoadConfig()
+
 	jwtConfig := middleware.JWTConfig{
-		SigningKey: []byte("ACCESS_TOKEN_SECRET"),
+		SigningKey:     []byte(config.Keys.AccessTokenSecret),
 		SuccessHandler: middlewares.JWTSuccessHandler,
 	}
 
-	db := database.Connect()
+	db := database.Connect(config.Database)
 	models.Migrate(db)
 
 	e.Use(middlewares.ContextDB(db))

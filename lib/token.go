@@ -11,11 +11,17 @@ type JWTTokenClaims struct {
 	jwt.StandardClaims
 }
 
-// FIXME: Change constant value to config value.
-const (
-	REFRESH_TOKEN_SECRET = "REFRESH_TOKEN_SECRET"
-	ACCESS_TOKEN_SECRET  = "ACCESS_TOKEN_SECRET"
+var (
+	refreshTokenSecret string
+	accessTokenSecret  string
 )
+
+func init() {
+	config := LoadConfig()
+
+	refreshTokenSecret = config.Keys.RefreshTokenSecret
+	accessTokenSecret = config.Keys.AccessTokenSecret
+}
 
 func createToken(secret string, claims jwt.Claims) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -37,7 +43,7 @@ func CreateRefreshToken(id uint) string {
 		},
 	}
 
-	t, _ := createToken(REFRESH_TOKEN_SECRET, claims)
+	t, _ := createToken(refreshTokenSecret, claims)
 
 	return t
 }
@@ -50,7 +56,7 @@ func CreateAccessToken(id uint) string {
 		},
 	}
 
-	t, _ := createToken(ACCESS_TOKEN_SECRET, claims)
+	t, _ := createToken(accessTokenSecret, claims)
 
 	return t
 }
@@ -72,6 +78,6 @@ func decryptJWTToken(secret, tokenString string) uint {
 }
 
 func DecryptRefreshToken(refreshToken string) (id uint) {
-	id = decryptJWTToken(REFRESH_TOKEN_SECRET, refreshToken)
+	id = decryptJWTToken(refreshTokenSecret, refreshToken)
 	return
 }
