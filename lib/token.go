@@ -1,12 +1,13 @@
 package lib
 
 import (
+	"fmt"
 	"github.com/golang-jwt/jwt"
 	"time"
 )
 
 type JWTTokenClaims struct {
-	Id int `json:"id"`
+	ID uint `json:"id"`
 	jwt.StandardClaims
 }
 
@@ -28,7 +29,7 @@ func createToken(secret string, claims jwt.Claims) (string, error) {
 	return t, err
 }
 
-func CreateRefreshToken(id int) string {
+func CreateRefreshToken(id uint) string {
 	claims := &JWTTokenClaims{
 		id,
 		jwt.StandardClaims{
@@ -41,7 +42,7 @@ func CreateRefreshToken(id int) string {
 	return t
 }
 
-func CreateAccessToken(id int) string {
+func CreateAccessToken(id uint) string {
 	claims := &JWTTokenClaims{
 		id,
 		jwt.StandardClaims{
@@ -54,22 +55,23 @@ func CreateAccessToken(id int) string {
 	return t
 }
 
-func decryptJWTToken(secret, tokenString string) int {
+func decryptJWTToken(secret, tokenString string) uint {
 	claims := jwt.MapClaims{}
 	_, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secret), nil
 	})
 
 	if err != nil {
+		fmt.Println(err)
 		panic(err)
 	}
 
-	id := int(claims["id"].(float64))
+	id := uint(claims["id"].(float64))
 
 	return id
 }
 
-func DecryptRefreshToken(refreshToken string) (id int) {
+func DecryptRefreshToken(refreshToken string) (id uint) {
 	id = decryptJWTToken(REFRESH_TOKEN_SECRET, refreshToken)
 	return
 }

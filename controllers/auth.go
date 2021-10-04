@@ -1,9 +1,10 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/minuchi/go-echo-auth/lib"
+	userService "github.com/minuchi/go-echo-auth/services/user"
+	"gorm.io/gorm"
 	"net/http"
 	"time"
 )
@@ -45,17 +46,21 @@ func Login(c echo.Context) error {
 		return err
 	}
 
-	// FIXME: Get password from database.
-	password := body.Password
-	hashedPassword := lib.HashPassword(password)
-	result, _ := lib.VerifyPassword(hashedPassword, password)
-
-	if result == true {
-		fmt.Printf("Password verified with %s\n", hashedPassword)
+	db := c.Get("db").(*gorm.DB)
+	email := body.Email
+	userHashedPassword, err := userService.GetUserPasswordByEmail(db, email)
+	if err != nil {
+		return err
 	}
 
-	// FIXME: Change "1" to user's id.
-	refreshToken := lib.CreateRefreshToken(1)
+	password := body.Password
+	result, _ := lib.VerifyPassword(userHashedPassword, password)
+	if result == false {
+		return echo.ErrBadRequest
+	}
+
+	userId := userService.GetUserIdByEmail(db, email)
+	refreshToken := lib.CreateRefreshToken(userId)
 
 	return c.JSON(http.StatusOK, echo.Map{"refresh_token": refreshToken})
 }
@@ -70,9 +75,16 @@ func SignUp(c echo.Context) error {
 		return err
 	}
 
+	db := c.Get("db").(*gorm.DB)
 	email := body.Email
+
+	userCount := userService.CheckUserExists(db, email)
+	if userCount > 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, "This email already exists.")
+	}
 	hashedPassword := lib.HashPassword(body.Password)
-	fmt.Printf("email: %s\nhashed_password: %s\n", email, hashedPassword)
+
+	userService.CreateUser(db, email, hashedPassword)
 
 	return c.JSON(http.StatusOK, body)
 }
@@ -95,5 +107,6 @@ func IssueAccessToken(c echo.Context) error {
 }
 
 func Verify(c echo.Context) error {
-	return c.JSON(http.StatusOK, echo.Map{"ok": true})
+	userId := c.Get("userId").(uint)
+	return c.JSON(http.StatusOK, echo.Map{"ok": true, "user_id": userId})
 }
